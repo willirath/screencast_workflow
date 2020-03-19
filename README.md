@@ -5,7 +5,8 @@ There's a more general [write-up about video recording of virtual conference tal
 
 ## Workflow on MacOSX
 
-Download [this file](https://raw.githubusercontent.com/willirath/screencast_workflow/master/scripts/mac_compress_screen_recordings.command) to your Desktop and make it executable (see below for how that works).
+Download [this file](https://raw.githubusercontent.com/willirath/screencast_workflow/master/scripts/mac_compress_screen_recordings.command) to your Desktop and make it executable.
+To make the `mac_compress_screen_recordings.command` executable, open a Terminal (hit `Command(⌘)-Space` and type `terminal`) and run `chmod 755 ${HOME}/Desktop/mac_compress_screen_recordings.command`. _(This only needs to be done once.)_
 
 On a Mac, use the screenshot tool (`Shift-Command(⌘)-5`) to record a video of your screen.
 Place it in a directory called `screen_recordings_raw` on your Desktop.
