@@ -10,6 +10,7 @@ _This will set up an automated workflow that takes all files found in `Desktop/s
 ### Preparations _(only necessary once)_
 
 Download [this file](https://raw.githubusercontent.com/willirath/screencast_workflow/master/scripts/mac_compress_screen_recordings.command) to your Desktop and make it executable.
+
 To make the `mac_compress_screen_recordings.command` executable, open a Terminal (hit `Command(⌘)-Space` and type `terminal`) and run `chmod 755 ${HOME}/Desktop/mac_compress_screen_recordings.command`.
 
 To set up the environment and run a test, execute `mac_compress_screen_recordings.command` by, e.g., double-clicking it or by chosing (secondary click) `open with -> Terminal`.
@@ -26,3 +27,14 @@ Place the resulting video file in `screen_recordings_raw/` on your Desktop.
 
 Then, execute the `mac_compress_screen_recordings.command`. (See above for how to do this.)
 This will use `ffmpeg` to create a lower quality (but still great for online teaching) version of all `mov` files in `Desktop/screen_recordings_raw/` and place them in `Desktop/screen_recordings_compressed/`.
+
+### What's happening under the hood?
+
+The essentials are
+
+```shell
+ffmpeg \
+  -i "${original_file}" \
+  -filter:v fps=fps=15 -c:v libx264 -crf 28 \
+  "${target_file}"  # use .mp4 to make sure it plays in the browser
+```
