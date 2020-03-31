@@ -28,7 +28,7 @@ Place the resulting video file in `screen_recordings_raw/` on your Desktop.
 Then, execute the `mac_compress_screen_recordings.command`. (See above for how to do this.)
 This will use `ffmpeg` to create a lower quality (but still great for online teaching) version of all `mov` files in `Desktop/screen_recordings_raw/` and place them in `Desktop/screen_recordings_compressed/`.
 
-### What's happening under the hood?
+## What's happening under the hood?
 
 The essentials are
 ```shell
