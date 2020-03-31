@@ -24,7 +24,7 @@ function maybe_compress_video {
   # construct file names and directories
   original_file="$@"
   just_file_name=$(basename "${original_file}")
-  target_file="${compressed_dir}/compressed_${just_file_name}"
+  target_file="${compressed_dir}/compressed_${just_file_name}.mp4"
 
   # check if target already exists, return without further action if so
   [ -f "${target_file}" ] && { echo "compressed file exists"; return; }
@@ -33,7 +33,7 @@ function maybe_compress_video {
   echo Will convert ${just_file_name}
   "${compressed_dir}"/bin/ffmpeg \
     -i "${original_file}" \
-    -filter:v fps=fps=20 -c:v libx264 -crf 28 \
+    -filter:v fps=fps=15 -c:v libx264 -crf 28 \
     "${target_file}"
   }
   export -f maybe_compress_video
