@@ -31,10 +31,11 @@ This will use `ffmpeg` to create a lower quality (but still great for online tea
 ### What's happening under the hood?
 
 The essentials are
-
 ```shell
-ffmpeg \
-  -i "${original_file}" \
-  -filter:v fps=fps=15 -c:v libx264 -crf 28 \
-  "${target_file}"  # use .mp4 to make sure it plays in the browser
+ffmpeg -i "${original_file}" -vf fps=fps=15 -c:v libx264 -crf 28 "${target_file}"
 ```
+with
+- `-vf fps=fps=15` for reducing time resolution to 15 frames per second,
+- `-c:v libx264` for selecting the codec,
+- `-crf 28` for applying a constant rate factor (0 = very good, 51 = terrible), and
+- `"${target_file}"` that should be named `...mp4` to make sure it plays in a web browser.
