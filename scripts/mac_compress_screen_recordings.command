@@ -7,24 +7,24 @@
 compressed_dir=${HOME}/Desktop/screen_recordings_compressed
 source_dir=${HOME}/Desktop/screen_recordings_raw
 export compressed_dir
-mkdir -p ${compressed_dir}/bin
-mkdir -p ${source_dir}
+mkdir -p "${compressed_dir}"/bin
+mkdir -p "${source_dir}"
 
 # maybe download ffmpeg
-if [ ! -f ${compressed_dir}/bin/ffmpeg ]; then
+if [ ! -f "${compressed_dir}"/bin/ffmpeg ]; then
   curl https://evermeet.cx/ffmpeg/ffmpeg-4.2.2.zip \
     -o "${compressed_dir}"/bin/ffmpeg-4.2.2.zip
-  cd "${compressed_dir}"/bin/
+  cd "${compressed_dir}"/bin/ || exit
   unzip ffmpeg-4.2.2.zip
   chmod 755 ffmpeg
-  cd -
+  cd - &>/dev/null || exit
 fi
 
 # compress a video file if its compressed counter part is not already present
 function maybe_compress_video {
 
   # construct file names and directories
-  original_file="$@"
+  original_file="$*"
   just_file_name=$(basename "${original_file}")
   target_file_name=$(basename "${just_file_name}" .mov).mp4
   target_file="${compressed_dir}/${target_file_name}"
@@ -33,7 +33,7 @@ function maybe_compress_video {
   [ -f "${target_file}" ] && { echo "compressed file exists"; return; }
 
   # continue compressing if file does not exist
-  echo Will convert ${just_file_name}
+  echo Will convert "${just_file_name}"
   "${compressed_dir}"/bin/ffmpeg \
     -i "${original_file}" \
     -filter:v fps=fps=15 -c:v libx264 -crf 28 \
@@ -43,7 +43,7 @@ function maybe_compress_video {
 
 # find all raw files and compress if needed
 find \
-  ${source_dir} \
+  "${source_dir}" \
   -name \*\.mov \
   -print0 | \
   xargs -0 -n1 -P1 -I {} bash -c "maybe_compress_video {}"
