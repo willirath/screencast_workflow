@@ -3,10 +3,12 @@
 # This will take all *.mov files in ${HOME}/Desktop/screen_recordings_raw/,
 # compress them and store them im ${HOME}/Desktop/screen_recordings_compressed/.
 
-# maybe create output directory
+# maybe create input and output directories
 compressed_dir=${HOME}/Desktop/screen_recordings_compressed
+source_dir=${HOME}/Desktop/screen_recordings_raw
 export compressed_dir
 mkdir -p ${compressed_dir}/bin
+mkdir -p ${source_dir}
 
 # maybe download ffmpeg
 if [ ! -f ${compressed_dir}/bin/ffmpeg ]; then
@@ -41,7 +43,7 @@ function maybe_compress_video {
 
 # find all raw files and compress if needed
 find \
-  ${HOME}/Desktop/screen_recordings_raw/ \
+  ${source_dir} \
   -name \*\.mov \
   -print0 | \
   xargs -0 -n1 -P1 -I {} bash -c "maybe_compress_video {}"
