@@ -24,7 +24,8 @@ function maybe_compress_video {
   # construct file names and directories
   original_file="$@"
   just_file_name=$(basename "${original_file}")
-  target_file="${compressed_dir}/compressed_${just_file_name}.mp4"
+  target_file_name=$(basename "${just_file_name}" .mov).mp4
+  target_file="${compressed_dir}/${target_file_name}"
 
   # check if target already exists, return without further action if so
   [ -f "${target_file}" ] && { echo "compressed file exists"; return; }
