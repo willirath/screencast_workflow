@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 # This will take all *.mov files in ${HOME}/Desktop/screen_recordings_raw/,
-# compress them and store them im ${HOME}/Desktop/screen_recordings_compressed/.
+# compress them and store them in ${HOME}/Desktop/screen_recordings_compressed/.
+
+set -eu
 
 echo "Will make sure the environment is set up ..."
 
@@ -9,49 +11,70 @@ echo "Will make sure the environment is set up ..."
 echo "... ensuring all directories are present."
 compressed_dir=${HOME}/Desktop/screen_recordings_compressed
 source_dir=${HOME}/Desktop/screen_recordings_raw
-export compressed_dir
 mkdir -p "${compressed_dir}"/bin
 mkdir -p "${source_dir}"
 
-# maybe download ffmpeg
-echo "... ensuring ffmpeg is present."
-if [ ! -f "${compressed_dir}"/bin/ffmpeg ]; then
-  curl https://evermeet.cx/ffmpeg/ffmpeg-4.2.2.zip \
-    -o "${compressed_dir}"/bin/ffmpeg-4.2.2.zip
-  cd "${compressed_dir}"/bin/ || exit
-  unzip ffmpeg-4.2.2.zip
-  chmod 755 ffmpeg
-  cd - &>/dev/null || exit
+# pick a static ffmpeg build matching the host architecture
+# (martin-riedl.de provides current notarized builds for both arm64 and amd64)
+arch=$(uname -m)
+case "${arch}" in
+  arm64)
+    ffmpeg_url="https://ffmpeg.martin-riedl.de/redirect/latest/macos/arm64/release/ffmpeg.zip"
+    ;;
+  x86_64)
+    ffmpeg_url="https://ffmpeg.martin-riedl.de/redirect/latest/macos/amd64/release/ffmpeg.zip"
+    ;;
+  *)
+    echo "Unsupported architecture: ${arch}" >&2
+    exit 1
+    ;;
+esac
+
+# prefer an ffmpeg already on PATH (e.g. Homebrew); otherwise download into bin/
+ffmpeg_bin=""
+if command -v ffmpeg >/dev/null 2>&1; then
+  ffmpeg_bin=$(command -v ffmpeg)
+  echo "... using existing ffmpeg at ${ffmpeg_bin}."
+elif [ -x "${compressed_dir}/bin/ffmpeg" ]; then
+  ffmpeg_bin="${compressed_dir}/bin/ffmpeg"
+  echo "... using previously downloaded ffmpeg at ${ffmpeg_bin}."
+else
+  echo "... downloading ffmpeg for ${arch} from ${ffmpeg_url}."
+  curl -L "${ffmpeg_url}" -o "${compressed_dir}/bin/ffmpeg.zip"
+  unzip -o "${compressed_dir}/bin/ffmpeg.zip" -d "${compressed_dir}/bin/"
+  rm "${compressed_dir}/bin/ffmpeg.zip"
+  chmod 755 "${compressed_dir}/bin/ffmpeg"
+  # downloaded binaries are quarantined by Gatekeeper; remove the attribute so
+  # the script can run unattended without a security prompt
+  xattr -d com.apple.quarantine "${compressed_dir}/bin/ffmpeg" 2>/dev/null || true
+  ffmpeg_bin="${compressed_dir}/bin/ffmpeg"
 fi
 
 echo "... done setting up the environment."
 
-# compress a video file if its compressed counter part is not already present
-function maybe_compress_video {
-
-  # construct file names and directories
-  original_file="$*"
+# compress a video file if its compressed counterpart is not already present
+maybe_compress_video() {
+  original_file="$1"
   just_file_name=$(basename "${original_file}")
   target_file_name=$(basename "${just_file_name}" .mov).mp4
   target_file="${compressed_dir}/${target_file_name}"
 
-  # check if target already exists, return without further action if so
-  [ -f "${target_file}" ] && { echo "... compressed file exists"; return; }
+  if [ -f "${target_file}" ]; then
+    echo "... compressed file exists: ${target_file_name}"
+    return
+  fi
 
-  # continue compressing if file does not exist
   echo "... converting ${just_file_name}"
-  "${compressed_dir}"/bin/ffmpeg \
+  "${ffmpeg_bin}" \
     -i "${original_file}" \
     -filter:v fps=fps=15 -c:v libx264 -crf 28 \
     "${target_file}"
-  }
-  export -f maybe_compress_video
+}
 
 # find all raw files and compress if needed
 echo "Will find and compress all video files in ${source_dir} ..."
-find \
-  "${source_dir}" \
-  -name \*\.mov \
-  -print0 | \
-  xargs -0 -n1 -P1 -I {} bash -c "maybe_compress_video {}"
+shopt -s nullglob
+for f in "${source_dir}"/*.mov; do
+  maybe_compress_video "${f}"
+done
 echo "... done compressing all video files."
