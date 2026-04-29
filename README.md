@@ -5,7 +5,9 @@ There's a more general [write-up about video recording of virtual conference tal
 
 ## Automated workflow on MacOSX
 
-_This will set up an automated workflow that takes all files found in `Desktop/screen_recordings_raw/`, converts and compresses them, and puts them into `Desktop/screen_recordings_raw/`._
+_This will set up an automated workflow that takes all files found in `Desktop/screen_recordings_raw/`, converts and compresses them, and puts them into `Desktop/screen_recordings_compressed/`._
+
+Works on both Apple Silicon (M1/M2/M3/M4) and Intel Macs. The script auto-detects the architecture and downloads a matching static `ffmpeg` build (or uses one already on `PATH`, e.g. via Homebrew).
 
 ### Preparations _(only necessary once)_
 
